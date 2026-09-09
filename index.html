@@ -1,124 +1,115 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>StudyMark — PDF Highlighter</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StudyMark v2 — PDF Reader</title>
 <style>
-:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e4e7ec;--accent:#675df5}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
-header{height:64px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 18px;position:sticky;top:0;z-index:20}
-.logo{font-weight:800;font-size:20px}.logo span{color:var(--accent)}
-button,.fileBtn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 13px;cursor:pointer;font-weight:600}
-button:hover,.fileBtn:hover{background:#f1f3f9}.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-input[type=file]{display:none}.spacer{flex:1}.status{font-size:13px;color:var(--muted)}
-main{height:calc(100vh - 64px);display:grid;grid-template-columns:1fr 310px}
-.viewer{overflow:auto;padding:28px;text-align:center}.page{position:relative;margin:0 auto 22px;background:#fff;box-shadow:0 4px 18px #0001;display:inline-block;text-align:left}
-.page canvas{display:block}.layer{position:absolute;inset:0;pointer-events:none}.highlight{position:absolute;opacity:.45;border-radius:3px;cursor:pointer;pointer-events:auto}
-.yellow{background:#ffe45e}.green{background:#72e6a2}.pink{background:#ff8fb3}.blue{background:#82b7ff}
-.sidebar{background:#fff;border-left:1px solid var(--line);padding:18px;overflow:auto}.sidebar h3{margin:0 0 8px}
-.note{border:1px solid var(--line);border-radius:12px;padding:11px;margin:10px 0;background:#fafbff}.note small{color:var(--muted)}
-.empty{color:var(--muted);font-size:14px;line-height:1.5}
-.toolbar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
-select{border:1px solid var(--line);border-radius:9px;padding:8px;background:#fff}
-.welcome{max-width:650px;margin:100px auto;text-align:center}.welcome h1{font-size:36px;margin:10px}.welcome p{color:var(--muted)}
-@media(max-width:800px){main{grid-template-columns:1fr}.sidebar{display:none}.viewer{padding:12px}.toolbar{position:sticky;top:0;background:var(--bg);z-index:5;padding:5px}.status{display:none}}
+:root{--bg:#f3f5f9;--card:#fff;--text:#172033;--muted:#667085;--line:#dfe3eb;--accent:#675df5}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{height:62px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 12px;position:sticky;top:0;z-index:50}
+.logo{font-size:19px;font-weight:800;margin-right:6px}.logo b{color:var(--accent)}
+button,.file{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 11px;font-weight:650;cursor:pointer}
+button.active,.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.color{width:31px;height:31px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #ccd1dc}.yellow{background:#ffe45e}.green{background:#71dfa0}.pink{background:#ff8fb0}.blue{background:#7eb3ff}
+.spacer{flex:1}.status{font-size:12px;color:var(--muted);white-space:nowrap}
+main{display:grid;grid-template-columns:minmax(0,1fr) 300px;height:calc(100vh - 62px)}
+.viewer{overflow:auto;padding:18px;text-align:center;position:relative}.page{position:relative;background:#fff;margin:0 auto 20px;display:block;width:max-content;box-shadow:0 4px 18px #0002}
+.page canvas{display:block}.layer{position:absolute;inset:0;pointer-events:none}
+.mark{position:absolute;opacity:.48;border-radius:2px;pointer-events:auto;cursor:pointer}
+.mark.yellow{background:#ffe45e}.mark.green{background:#71dfa0}.mark.pink{background:#ff8fb0}.mark.blue{background:#7eb3ff}
+.sidebar{background:#fff;border-left:1px solid var(--line);padding:15px;overflow:auto}.sidebar h3{margin:0 0 4px}.hint{font-size:12px;color:var(--muted)}
+.note{padding:10px;border:1px solid var(--line);border-radius:10px;margin:8px 0;cursor:pointer;font-size:13px}.note:hover{background:#f7f8fc}.note small{color:var(--muted)}
+.welcome{max-width:600px;margin:90px auto;text-align:center}.welcome h1{font-size:34px;margin:8px}.welcome p{color:var(--muted)}
+.zoom{display:flex;align-items:center;gap:5px}
+@media(max-width:800px){main{grid-template-columns:1fr}.sidebar{display:none}.viewer{padding:8px}header{overflow:auto}.logo{flex:none}.status{display:none}.page{margin-bottom:12px}}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo">Study<span>Mark</span></div>
-  <label class="fileBtn primary">Open PDF<input id="pdfInput" type="file" accept="application/pdf"></label>
-  <button id="saveBtn">Save Notes</button>
-  <button id="clearBtn">Clear Highlights</button>
-  <div class="spacer"></div><div id="status" class="status">Open a PDF to start</div>
+<div class="logo">Study<b>Mark</b></div>
+<label class="file primary">Open PDF<input id="file" type="file" accept="application/pdf" hidden></label>
+<button id="highlight" class="active">🖍 Highlight</button>
+<button class="color yellow" data-color="yellow" title="Yellow"></button>
+<button class="color green" data-color="green" title="Green"></button>
+<button class="color pink" data-color="pink" title="Pink"></button>
+<button class="color blue" data-color="blue" title="Blue"></button>
+<div class="zoom"><button id="minus">−</button><span id="zoom">125%</span><button id="plus">+</button></div>
+<div class="spacer"></div><span id="status" class="status">Open a PDF</span>
 </header>
 <main>
 <section class="viewer" id="viewer">
-  <div class="welcome" id="welcome">
-    <h1>Read. Highlight. Remember.</h1>
-    <p>Open a PDF, select text with your mouse/finger, then choose a highlight color. Your marks are stored in this browser.</p>
-    <label class="fileBtn primary">Choose PDF<input id="pdfInput2" type="file" accept="application/pdf"></label>
-  </div>
+<div class="welcome"><h1>Read. Highlight. Remember.</h1><p>High-resolution PDF reader with automatic highlight saving.</p><label class="file primary">Choose PDF<input id="file2" type="file" accept="application/pdf" hidden></label></div>
 </section>
-<aside class="sidebar">
-  <h3>Important Points</h3>
-  <p class="empty">Highlights from your PDF will appear here. Click a point to jump to its page.</p>
-  <div id="notes"></div>
-</aside>
+<aside class="sidebar"><h3>⭐ Important Points</h3><div class="hint">Highlights auto-save as you make them.</div><div id="notes"></div></aside>
 </main>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+
 <script type="module">
 import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
 
-const viewer=document.getElementById("viewer"), notes=document.getElementById("notes"), status=document.getElementById("status");
-const input=document.getElementById("pdfInput"), input2=document.getElementById("pdfInput2");
-let pdf=null, marks=[], pdfKey="";
+const $=id=>document.getElementById(id), viewer=$("viewer"), notes=$("notes");
+let pdf=null,fileKey="",marks=[],scale=1.25,currentColor="yellow",highlightMode=true;
 
-[input,input2].forEach(i=>i.addEventListener("change",e=>e.target.files[0]&&loadFile(e.target.files[0])));
+$("file").onchange=e=>e.target.files[0]&&openPDF(e.target.files[0]);
+$("file2").onchange=e=>e.target.files[0]&&openPDF(e.target.files[0]);
 
-async function loadFile(file){
-  pdfKey="studymark:"+file.name+":"+file.size;
-  const data=await file.arrayBuffer();
-  pdf=await pdfjsLib.getDocument({data}).promise;
+async function openPDF(file){
+  fileKey="StudyMark:v2:"+file.name+":"+file.size;
+  pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+  marks=JSON.parse(localStorage.getItem(fileKey)||"[]");
   viewer.innerHTML="";
-  marks=JSON.parse(localStorage.getItem(pdfKey)||"[]");
-  status.textContent=`${file.name} • ${pdf.numPages} pages`;
-  for(let n=1;n<=pdf.numPages;n++) await renderPage(n);
+  $("status").textContent=file.name+" • "+pdf.numPages+" pages • auto-save ON";
+  await renderAll();
   renderNotes();
 }
-
+async function renderAll(){
+  viewer.innerHTML="";
+  for(let n=1;n<=pdf.numPages;n++) await renderPage(n);
+}
 async function renderPage(n){
-  const p=await pdf.getPage(n), scale=Math.min(1.65,Math.max(.8,innerWidth/900));
-  const vp=p.getViewport({scale});
-  const wrap=document.createElement("div"); wrap.className="page"; wrap.id="page-"+n;
-  const canvas=document.createElement("canvas"); canvas.width=vp.width; canvas.height=vp.height;
-  wrap.appendChild(canvas);
-  const layer=document.createElement("div"); layer.className="layer"; wrap.appendChild(layer);
-  viewer.appendChild(wrap);
-  await p.render({canvasContext:canvas.getContext("2d"),viewport:vp}).promise;
-  drawMarks(n,layer,vp);
-  canvas.addEventListener("mouseup",()=>captureSelection(n,layer,vp));
-  canvas.addEventListener("touchend",()=>setTimeout(()=>captureSelection(n,layer,vp),50));
+  const p=await pdf.getPage(n);
+  const dpr=Math.min(3,window.devicePixelRatio||1);
+  const vp=p.getViewport({scale:scale});
+  const hi=p.getViewport({scale:scale*dpr});
+  const wrap=document.createElement("div");wrap.className="page";wrap.id="page-"+n;
+  const c=document.createElement("canvas");c.style.width=vp.width+"px";c.style.height=vp.height+"px";c.width=Math.ceil(hi.width);c.height=Math.ceil(hi.height);
+  wrap.appendChild(c);
+  const layer=document.createElement("div");layer.className="layer";wrap.appendChild(layer);viewer.appendChild(wrap);
+  await p.render({canvasContext:c.getContext("2d"),viewport:hi}).promise;
+  draw(n,layer);
+  c.addEventListener("mouseup",()=>selectText(n,wrap));
+  c.addEventListener("touchend",()=>setTimeout(()=>selectText(n,wrap),80));
 }
-
-function captureSelection(page,layer,vp){
-  const sel=getSelection(); const text=sel.toString().trim();
-  if(!text)return;
-  const r=sel.getRangeAt(0), rect=r.getBoundingClientRect(), base=viewer.querySelector("#page-"+page).getBoundingClientRect();
-  const x=(rect.left-base.left)/base.width, y=(rect.top-base.top)/base.height;
-  const w=rect.width/base.width, h=Math.max(rect.height,16)/base.height;
-  const color=prompt("Highlight color: yellow, green, pink, or blue","yellow");
-  if(!["yellow","green","pink","blue"].includes(color)) return;
-  marks.push({id:Date.now()+Math.random(),page,text,color,x,y,w,h});
-  persist(); drawMarks(page,layer,vp); renderNotes(); sel.removeAllRanges();
+function selectText(page,wrap){
+  if(!highlightMode)return;
+  const s=getSelection();let text=s.toString().trim();if(!text)return;
+  const r=s.getRangeAt(0), rect=r.getBoundingClientRect(), base=wrap.getBoundingClientRect();
+  const x=Math.max(0,(rect.left-base.left)/base.width), y=Math.max(0,(rect.top-base.top)/base.height);
+  const w=Math.min(1-x,rect.width/base.width), h=Math.max(.012,Math.min(1-y,rect.height/base.height));
+  marks.push({id:crypto.randomUUID(),page,text,color:currentColor,x,y,w,h});
+  autoSave();draw(page,wrap.querySelector(".layer"));renderNotes();s.removeAllRanges();
 }
-
-function drawMarks(page,layer){
+function draw(page,layer){
   layer.innerHTML="";
-  const pageEl=document.getElementById("page-"+page);
   marks.filter(m=>m.page===page).forEach(m=>{
-    const d=document.createElement("div"); d.className="highlight "+m.color;
-    d.style.left=(m.x*100)+"%";d.style.top=(m.y*100)+"%";d.style.width=(m.w*100)+"%";d.style.height=(m.h*100)+"%";
-    d.title=m.text; d.onclick=()=>removeMark(m.id); layer.appendChild(d);
+    const e=document.createElement("div");e.className="mark "+m.color;
+    e.style.left=m.x*100+"%";e.style.top=m.y*100+"%";e.style.width=m.w*100+"%";e.style.height=m.h*100+"%";e.title="Tap to remove";
+    e.onclick=ev=>{ev.stopPropagation();marks=marks.filter(x=>x.id!==m.id);autoSave();draw(page,layer);renderNotes()};layer.appendChild(e);
   });
 }
-function persist(){localStorage.setItem(pdfKey,JSON.stringify(marks))}
+function autoSave(){localStorage.setItem(fileKey,JSON.stringify(marks))}
 function renderNotes(){
-  notes.innerHTML="";
-  if(!marks.length){notes.innerHTML='<p class="empty">No highlights yet. Select text in the PDF to add one.</p>';return}
-  marks.forEach((m,i)=>{
-    const d=document.createElement("div");d.className="note";
-    d.innerHTML=`<b>Page ${m.page}</b><br><span>${escapeHtml(m.text.slice(0,180))}${m.text.length>180?"…":""}</span><br><small>${m.color} highlight • tap to jump • click highlight to remove</small>`;
-    d.onclick=()=>document.getElementById("page-"+m.page)?.scrollIntoView({behavior:"smooth",block:"center"});
-    notes.appendChild(d);
+  notes.innerHTML=marks.length?"":"<p class='hint'>No highlights yet. Select important text in Highlight mode.</p>";
+  marks.forEach(m=>{
+    const e=document.createElement("div");e.className="note";
+    e.innerHTML="<b>Page "+m.page+"</b><br>"+esc(m.text.slice(0,220))+(m.text.length>220?"…":"")+"<br><small>"+m.color+" • saved automatically</small>";
+    e.onclick=()=>document.getElementById("page-"+m.page)?.scrollIntoView({behavior:"smooth",block:"center"});notes.appendChild(e);
   });
 }
-function removeMark(id){marks=marks.filter(x=>x.id!==id);persist();document.querySelectorAll(".layer").forEach((l,i)=>drawMarks(i+1,l));renderNotes()}
-document.getElementById("clearBtn").onclick=()=>{if(confirm("Remove all highlights for this PDF?")){marks=[];persist();document.querySelectorAll(".layer").forEach((l,i)=>drawMarks(i+1,l));renderNotes()}}
-document.getElementById("saveBtn").onclick=()=>{persist();alert("Highlights saved in this browser for this PDF.")};
-function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+$("highlight").onclick=()=>{highlightMode=!highlightMode;$("highlight").classList.toggle("active",highlightMode)}
+document.querySelectorAll(".color").forEach(b=>b.onclick=()=>{currentColor=b.dataset.color;highlightMode=true;$("highlight").classList.add("active")});
+$("plus").onclick=()=>{if(!pdf)return;scale=Math.min(3,scale+.15);$("zoom").textContent=Math.round(scale*100)+"%";renderAll()};
+$("minus").onclick=()=>{if(!pdf)return;scale=Math.max(.7,scale-.15);$("zoom").textContent=Math.round(scale*100)+"%";renderAll()};
 </script>
-</body>
-</html>
+</body></html>

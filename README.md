@@ -1,13 +1,12 @@
-# StudyMark — Free PDF Highlighter
+# StudyMark v2
 
-Open `index.html` in a modern browser. The first version supports:
-- PDF viewing using PDF.js
-- Text selection
-- Yellow/green/pink/blue highlights
-- Important-points sidebar
-- Persistent browser storage (localStorage)
-- Mobile responsive layout
+High-resolution browser PDF reader with:
+- High-DPI PDF rendering (up to 3x device pixel ratio)
+- Highlight mode with four colors
+- Automatic local saving after every highlight
+- Highlights restored when the same PDF is reopened
+- Important Points sidebar
+- Zoom controls
+- Mobile-friendly UI
 
-No backend is required. PDF files stay in the browser.
-
-Note: PDF.js is loaded from Cloudflare CDN, so internet access is needed when opening the page unless you later bundle PDF.js locally.
+Open index.html in Chrome/Edge. PDF.js is loaded from a CDN, so internet is needed unless PDF.js is bundled locally.
